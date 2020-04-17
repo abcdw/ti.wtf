@@ -5,6 +5,6 @@ let
 in
 with pkgs;
 mkShell {
-  buildInputs = [clojure gnumake gcc];
+  buildInputs = [clojure gnumake gcc curl httpie];
   LD_LIBRARY_PATH = "${stdenv.cc.cc.lib}/lib";
 }
