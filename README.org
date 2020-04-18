@@ -1,3 +1,12 @@
 * ti.wtf
 
 Simple url shortener
+
+https://example.org/some/very/long/url -> http://ti.wtf/u/B0
+
+#+BEGIN_SRC sh
+curl -X POST --data "shorten=https://example.org/some/very/long/url" localhost:3000
+#+END_SRC
+
+#+RESULTS:
+: http://ti.wtf/u/test
