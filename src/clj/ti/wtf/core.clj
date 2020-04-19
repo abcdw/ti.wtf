@@ -5,31 +5,36 @@
             [ring.middleware.multipart-params :as ring-mp-params]
             [ring.middleware.params :as ring-params]))
 
-(def our-digits
+(def a-z-range (range 97 (+ 97 26)))
+(def A-Z-range (range 65 (+ 65 26)))
+
+(def base62-digits
   (concat
-   (map char (range 97 (+ 97 26)))
-   (map char (range 65 (+ 65 26)))
+   (map char a-z-range)
+   (map char A-Z-range)
    (map str (range 0 10))))
 
-(defn- to-our-digits [res rest]
-  (if (= rest 0)
-    (if (string/blank? res)
-      (str (first our-digits))
-      res)
-    (to-our-digits
-     (str (nth our-digits (mod rest (count our-digits)))
-          res)
-     (quot rest (count our-digits)))))
-
 (defn id->shorthand [id]
-  (to-our-digits "" id))
+  (loop [res  ""
+         rest id]
+    (if (= rest 0)
+      (if (string/blank? res)
+        (str (first base62-digits))
+        res)
+      (recur
+       (str (->> base62-digits
+                 count
+                 (mod rest)
+                 (nth base62-digits))
+            res)
+       (quot rest (count base62-digits))))))
 
 (defn root-html [request]
   {:status 200
    :body   "ok"})
 
 (defn generate-link [db url]
-  {:ti.wtf/shorten-url "shorten here"
+  {:ti.wtf/shorten-url  "shorten here"
    :ti.wtf/original-url "here"})
 
 (defn create-shorten-url [{:keys [form-params] :as request}]
