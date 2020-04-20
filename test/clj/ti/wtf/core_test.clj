@@ -11,17 +11,29 @@
          :as   result} (sut/app query)]
     (is (= 200 status))
     (is body)
+    ;; (?s) for multiline matching
     (is (re-find #"(?s)</form>" body))))
 
 (deftest get-shorten-url
-  (let [query           {:request-method :get
-                         :uri            "/"
-                         :query-params   {"shorten" "https://example.org/very/long/url"}}
-        new-url-pattern (re-pattern (str (:domain sut/config) "/u/.*"))
-        {:keys [status body]
-         :as   result}  (sut/app query)]
-    (is (= 200 status))
-    (is (re-matches new-url-pattern body))))
+  (testing "get shorten url for provided url"
+    (let [query           {:request-method :get
+                           :uri            "/"
+                           :query-params   {"shorten" "https://example.org/very/long/url"}}
+          new-url-pattern (re-pattern (str (:domain sut/config) "/u/.*"))
+          {:keys [status body]
+           :as   result}  (sut/app query)]
+             (is (= 200 status))
+             (is (re-matches new-url-pattern body))))
+
+  (testing "get html instead just url"
+    (let [query {:request-method :get
+                 :uri            "/"
+                 :query-params   {"shorten" "https://example.org/very/long/url"
+                                  "html"    "true"}}
+          {:keys [status body]
+           :as   result} (sut/app query)]
+      (is (= 200 status))
+      (is (re-find #"(?s)</body>" body)))))
 
 (deftest generate-link
   (let [db     {:urls [{}]}

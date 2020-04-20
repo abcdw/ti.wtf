@@ -24,7 +24,6 @@
 (def sample-url "https://example.org/some/very/long/url")
 
 (def styles "
-
 * { font-family: monospace; }
 :focus { outline: none; }
 iframe { overflow: hidden; }
@@ -64,7 +63,7 @@ code {
                             :padding-left  "0.25rem"
                             :border-bottom "1px dashed"}}]
      [:input {:type "hidden"
-              :name "html-form"}]
+              :name "html"}]
      [:input {:type  "submit"
               :style {:border       "1px dashed"
                       :margin-left  "0.5rem"
@@ -74,7 +73,7 @@ code {
              :style     {:border "none"
                          :margin "0.25rem"
                          :width  "100%"
-                         :height "1rem"}}]])
+                         :height "1.1rem"}}]])
 
 (rum/defc root-comp []
   [:div
@@ -115,10 +114,10 @@ Create a short url with curl:
      url]])
 
 (defn get-shorten-url [{:keys [form-params query-params] :as request}]
-  (let [short-url (str (:domain config) "/u/test")]
+  (let [short-url (str (:base-url config) "/u/test")]
     {:status 200
      :body
-     (if (contains? query-params "html-form")
+     (if (contains? query-params "html")
        (rum/render-html (short-url-comp short-url))
        short-url)}))
 
