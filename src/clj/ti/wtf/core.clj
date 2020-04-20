@@ -19,6 +19,8 @@
    (map char A-Z-range)
    (map str (range 0 10))))
 
+(def sample-url "https://example.org/some/very/long/url")
+
 (defn id->shorthand [id]
   (loop [res  ""
          rest id]
@@ -34,6 +36,7 @@
             res)
        (quot rest (count base62-digits))))))
 
+
 (rum/defc root-comp []
   [:div
    {:style
@@ -43,16 +46,18 @@
   outline: none;
 }"]
    [:pre
-    "The insaniest WTF
+    (format
+     "The insaniest WTF.
 
-Make a short url:
+Share your WTF with a short url:
 
-    curl -X POST --data 'shorten=https://example.org/some/very/long/url' ti.wtf
+    curl -X POST --data '%s' ti.wtf
 
-"]
+" sample-url)]
    [:form
-    [:input {:type        "text" :name "shorten"
-             :placeholder "https://example.org/long/url"
+    [:input {:type        "text"
+             :name        "shorten"
+             :placeholder sample-url
              :autofocus   true
              :size        70
              :style       {:border        "none"
