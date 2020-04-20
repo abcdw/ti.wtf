@@ -23,6 +23,18 @@
 
 (def sample-url "https://example.org/some/very/long/url")
 
+(def styles "
+
+* { font-family: monospace; }
+:focus { outline: none; }
+iframe { overflow: hidden; }
+a { color: inherit; }
+
+code {
+  margin-left: 2rem;
+}
+")
+
 (defn id->shorthand [id]
   (loop [res  ""
          rest id]
@@ -38,46 +50,82 @@
             res)
        (quot rest (count base62-digits))))))
 
+(rum/defc form-comp []
+  [:div
+    [:form
+     {:target "shorten-url"
+      :style  {:margin "0"}}
+     [:input {:type        "text"
+              :name        "shorten"
+              :placeholder sample-url
+              :autofocus   true
+              :size        70
+              :style       {:border        "none"
+                            :padding-left  "0.25rem"
+                            :border-bottom "1px dashed"}}]
+     [:input {:type "hidden"
+              :name "html-form"}]
+     [:input {:type  "submit"
+              :style {:border       "1px"
+                      :border-style "dashed"
+                      :margin-left  "0.5rem"
+                      :background   "none"}}]]
+   [:iframe {:name      "shorten-url"
+             :scrolling "no"
+             :style     {:border "none"
+                         :margin "0.25rem"
+                         :width  "100%"
+                         :height "1rem"}}]])
 
 (rum/defc root-comp []
   [:div
    {:style
-    {:font-family "monospace"}}
-   [:style
-    ":focus {
-  outline: none;
-}"]
+    {:margin "1rem"}}
+   [:style styles]
+   [:pre    "# This is wtf.\n\nDon't know what the f*ck is this?\nThis is url shortener of course.\n\n\n\n"]
+
+   [:pre "## Using via form\n\nJust paste you url below and get a shorter one or at least better one."]
+    (form-comp)
+
+   [:pre "\n\n\n"]
    [:pre
-    (format
-     "The insaniest WTF.
+    "## Using via cli\n
+Create a short url with curl:
+"
+    [:code
+     (format
+      "curl -X POST --data '%s' ti.wtf"
+      sample-url)]
+     "\n\n\n"
+    ]
 
-Share your WTF with a short url:
 
-    curl -X POST --data '%s' ti.wtf
 
-" sample-url)]
-   [:form
-    [:input {:type        "text"
-             :name        "shorten"
-             :placeholder sample-url
-             :autofocus   true
-             :size        70
-             :style       {:border        "none"
-                           :padding-left  "0.25rem"
-                           :border-bottom "1px dashed"}}]
+   [:pre "## Source code\n\nThe source code available at "
+    [:a {:href   "https://github.com/abcdw/ti.wtf"
+         :target "_blank"} "abcdw/ti.wtf"]]
+   ])
 
-    [:input {:type  "submit"
-             :style {:border       "1px"
-                     :border-style "dashed"
-                     :margin-left  "0.5rem"
-                     :background   "none"}}]]])
+(rum/defc short-url-comp [url]
+  [:body
+   {:style
+    {:margin 0}}
+   [:a {:href url
+        :target "_blank"
+        :style {:margin "0" :color "inherit" :font-family "monospace"}}
+     url]])
 
 (defn create-shorten-url [{:keys [form-params query-params] :as request}]
-  {:status  200
-   :body    (str (:domain config) "/u/test")})
+  (let [short-url (str (:domain config) "/u/test")]
+    {:status 200
+     :body
+     (if (contains? query-params "html-form")
+       (rum/render-html (short-url-comp short-url))
+       short-url)}))
 
 (defn root-form [{:keys [form-params query-params] :as request}]
-  (if (contains? query-params :shorten)
+  #p request
+  (if (contains? query-params "shorten")
     (create-shorten-url request)
     {:status  200
      :headers {"content-type" "text/html"}

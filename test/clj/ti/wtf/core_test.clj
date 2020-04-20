@@ -14,13 +14,14 @@
     (is (re-find #"(?s)</form>" body))))
 
 (deftest create-shorten-url
-  (let [query          {:request-method :get
-                        :uri            "/"
-                        :query-params   {:shorten "https://example.org/very/long/url"}}
+  (let [query           {:request-method :get
+                         :uri            "/"
+                         :query-params   {"shorten" "https://example.org/very/long/url"}}
+        new-url-pattern (re-pattern (str (:domain sut/config) "/u/.*"))
         {:keys [status body]
-         :as   result} (sut/app query)]
+         :as   result}  (sut/app query)]
     (is (= 200 status))
-    (is (re-matches (re-pattern (str (:domain sut/config) "/u/.*")) body))))
+    (is (re-matches new-url-pattern body))))
 
 (deftest generate-link
   (let [db     {:urls [{}]}
