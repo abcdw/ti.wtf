@@ -13,7 +13,7 @@
     (is body)
     (is (re-find #"(?s)</form>" body))))
 
-(deftest create-shorten-url
+(deftest get-shorten-url
   (let [query           {:request-method :get
                          :uri            "/"
                          :query-params   {"shorten" "https://example.org/very/long/url"}}

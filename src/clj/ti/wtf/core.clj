@@ -115,7 +115,7 @@ Create a short url with curl:
         :style {:margin "0" :color "inherit" :font-family "monospace"}}
      url]])
 
-(defn create-shorten-url [{:keys [form-params query-params] :as request}]
+(defn get-shorten-url [{:keys [form-params query-params] :as request}]
   (let [short-url (str (:domain config) "/u/test")]
     {:status 200
      :body
@@ -124,9 +124,8 @@ Create a short url with curl:
        short-url)}))
 
 (defn root-form [{:keys [form-params query-params] :as request}]
-  #p request
   (if (contains? query-params "shorten")
-    (create-shorten-url request)
+    (get-shorten-url request)
     {:status  200
      :headers {"content-type" "text/html"}
      :body    (rum/render-html (root-comp))}))
@@ -140,7 +139,7 @@ Create a short url with curl:
    [["/" {:get
           {:handler root-form}
           :post
-          {:handler create-shorten-url}}]]))
+          {:handler get-shorten-url}}]]))
 
 (def app
   (ring/ring-handler
