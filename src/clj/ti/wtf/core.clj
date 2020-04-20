@@ -66,8 +66,7 @@ code {
      [:input {:type "hidden"
               :name "html-form"}]
      [:input {:type  "submit"
-              :style {:border       "1px"
-                      :border-style "dashed"
+              :style {:border       "1px dashed"
                       :margin-left  "0.5rem"
                       :background   "none"}}]]
    [:iframe {:name      "shorten-url"
