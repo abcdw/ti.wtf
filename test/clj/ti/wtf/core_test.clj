@@ -5,20 +5,22 @@
 
 
 (deftest root-html
-  (let [query {:request-method :get
-               :uri            "/"}
-        result (sut/app query)]
-    (is (= 200 (:status result)))
-    (is (contains? result :body))))
-
-(deftest create-shorten-url
-  (let [query          {:request-method :post
-                        :uri            "/"
-                        :form-params    {:shorten "https://example.org/very/long/url"}}
+  (let [query          {:request-method :get
+                        :uri            "/"}
         {:keys [status body]
          :as   result} (sut/app query)]
     (is (= 200 status))
-    (is (re-matches #"http://.*/u/.*" body))))
+    (is body)
+    (is (re-find #"(?s)</form>" body))))
+
+(deftest create-shorten-url
+  (let [query          {:request-method :get
+                        :uri            "/"
+                        :query-params   {:shorten "https://example.org/very/long/url"}}
+        {:keys [status body]
+         :as   result} (sut/app query)]
+    (is (= 200 status))
+    (is (re-matches (re-pattern (str (:domain sut/config) "/u/.*")) body))))
 
 (deftest generate-link
   (let [db     {:urls [{}]}
@@ -29,7 +31,3 @@
   (is (= "a" (sut/id->shorthand 0)))
   (is (= "9" (sut/id->shorthand 61)))
   (is (= "ba" (sut/id->shorthand 62))))
-
-
-
-;;

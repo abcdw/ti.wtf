@@ -6,7 +6,9 @@
             [ring.middleware.params :as ring-params]
             [rum.core :as rum]))
 
-(def BASE_URL "http://ti.wtf")
+(def config {:base-url "https://ti.wtf"
+             :protocol "https"
+             :domain   "ti.wtf"})
 
 (def db (atom []))
 
@@ -70,19 +72,20 @@ Share your WTF with a short url:
                      :margin-left  "0.5rem"
                      :background   "none"}}]]])
 
-(defn root-form [request]
+(defn create-shorten-url [{:keys [form-params query-params] :as request}]
   {:status  200
-   :headers {"content-type" "text/html"}
-   :body    (rum/render-html (root-comp))})
+   :body    (str (:domain config) "/u/test")})
+
+(defn root-form [{:keys [form-params query-params] :as request}]
+  (if (contains? query-params :shorten)
+    (create-shorten-url request)
+    {:status  200
+     :headers {"content-type" "text/html"}
+     :body    (rum/render-html (root-comp))}))
 
 (defn generate-link [db url]
   {:ti.wtf/shorten-url  "shorten here"
    :ti.wtf/original-url "here"})
-
-(defn create-shorten-url [{:keys [form-params] :as request}]
-  (clojure.pprint/pprint form-params)
-  {:status  200
-   :body    "http://ti.wtf/u/test"})
 
 (def router
   (ring/router
