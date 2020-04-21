@@ -19,7 +19,7 @@
     (let [query           {:request-method :get
                            :uri            "/"
                            :query-params   {"shorten" "https://example.org/very/long/url"}}
-          new-url-pattern (re-pattern (str (:domain sut/config) "/u/.*"))
+          new-url-pattern (re-pattern (str (:base-url sut/config) "/.*"))
           {:keys [status body]
            :as   result}  (sut/app query)]
              (is (= 200 status))
@@ -34,6 +34,15 @@
            :as   result} (sut/app query)]
       (is (= 200 status))
       (is (re-find #"(?s)</body>" body)))))
+
+(deftest shorthand-redirect
+  (let [shorthand      "baa"
+        query          {:request-method :get
+                        :uri            (str "/" shorthand)}
+        {:keys [status headers]
+         :as   result} (sut/app query)]
+    (is (= 308 status))
+    (is (contains? headers "location"))))
 
 (deftest generate-link
   (let [db     {:urls [{}]}

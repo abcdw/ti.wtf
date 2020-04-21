@@ -6,9 +6,13 @@
             [ring.middleware.params :as ring-params]
             [rum.core :as rum]))
 
-(def config {:base-url "https://ti.wtf"
-             :protocol "https"
-             :domain   "ti.wtf"})
+;; (def config {:base-url "https://ti.wtf"
+;;              :protocol "https"
+;;              :domain   "ti.wtf"})
+
+(def config {:base-url "http://localhost:3000"
+             :protocol "http"
+             :domain   "localhost:3000"})
 
 (def db (atom []))
 
@@ -113,17 +117,20 @@ Create a short url with curl:
         :style {:margin "0" :color "inherit" :font-family "monospace"}}
      url]])
 
-(defn get-shorten-url [{:keys [form-params query-params] :as request}]
-  (let [short-url (str (:base-url config) "/u/test")]
+(defn get-shorten-url [params]
+  (let [short-url (str (:base-url config) "/test")]
     {:status 200
      :body
-     (if (contains? query-params "html")
+     (if (contains? params "html")
        (rum/render-html (short-url-comp short-url))
        short-url)}))
 
-(defn root-form [{:keys [form-params query-params] :as request}]
+(defn handle-root-post [{:keys [form-params] :as request}]
+  (get-shorten-url form-params))
+
+(defn handle-root-get [{:keys [form-params query-params] :as request}]
   (if (contains? query-params "shorten")
-    (get-shorten-url request)
+    (get-shorten-url query-params)
     {:status  200
      :headers {"content-type" "text/html"}
      :body    (rum/render-html (root-comp))}))
@@ -132,12 +139,21 @@ Create a short url with curl:
   {:ti.wtf/shorten-url  "shorten here"
    :ti.wtf/original-url "here"})
 
+(defn handle-shorthand-get [request]
+  {:headers {"location" "https://example.org/test/url"}
+   :status  308})
+
 (def router
   (ring/router
-   [["/" {:get
-          {:handler root-form}
-          :post
-          {:handler get-shorten-url}}]]))
+   [["/"
+     {:get
+      {:handler handle-root-get}
+      :post
+      {:handler handle-root-post}}]
+    ["/:shorthand"
+     {:get
+      {:handler handle-shorthand-get}}]]
+   ))
 
 (def app
   (ring/ring-handler
