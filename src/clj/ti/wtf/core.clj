@@ -1,5 +1,8 @@
 (ns ti.wtf.core
-  (:require [clojure.string :as string]
+  (:require [aero.core :as aero]
+            [clojure.java.io :as io]
+            [clojure.string :as string]
+            [next.jdbc :as jdbc]
             [reitit.ring :as ring]
             [ring.adapter.jetty :as jetty]
             [ring.middleware.multipart-params :as ring-mp-params]
@@ -10,11 +13,16 @@
 ;;              :protocol "https"
 ;;              :domain   "ti.wtf"})
 
-(def config {:base-url "http://localhost:3000"
-             :protocol "http"
-             :domain   "localhost:3000"})
+(defn get-config []
+  (-> (io/resource "config.edn")
+      (aero/read-config)))
 
-(def db (atom []))
+(def config (get-config))
+
+(def ds (jdbc/get-datasource (:db config)))
+
+;; (jdbc/execute! ds ["SHOW TABLES"])
+;; (jdbc/execute! ds [""])
 
 (def a-z-range (range 97 (+ 97 26)))
 (def A-Z-range (range 65 (+ 65 26)))

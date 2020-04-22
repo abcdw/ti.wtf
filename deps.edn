@@ -4,7 +4,8 @@
          metosin/reitit            {:mvn/version "0.4.2"}
          rum                       {:mvn/version "0.11.4"}
          seancorfield/next.jdbc    {:mvn/version "1.0.424"}
-         org.postgresql/postgresql {:mvn/version "42.2.12"}}
+         org.postgresql/postgresql {:mvn/version "42.2.12"}
+         aero {:mvn/version "1.1.6"}}
 
  :aliases
  {:nrepl
@@ -16,7 +17,7 @@
    :main-opts ["-e" "(require,'hashp.core)"]}
 
   :server
-  {:extra-paths ["src/clj"]}
+  {:extra-paths ["src/clj" "resources"]}
 
   :ui
   {:extra-paths ["src/cljs"]

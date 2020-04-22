@@ -1,0 +1,4 @@
+{:base-url "http://localhost:3000"
+ :protocol "http"
+ :domain   "localhost:3000"
+ :db       {:dbtype "postgresql" :dbname "ti" :port 5432}}
