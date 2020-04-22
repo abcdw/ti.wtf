@@ -12,6 +12,11 @@ server/nrepl:
 server/test:
 	clojure -A:server:test:test-runner
 
+db/start:
+	docker-compose up -d
+
+db/stop:
+	docker-compose stop
 
 ui/watch:
 	npx shadow-cljs watch :dev

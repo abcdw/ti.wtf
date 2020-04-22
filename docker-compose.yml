@@ -1,0 +1,10 @@
+version: '3'
+services:
+  postgres:
+    container_name: ti-postgres
+    image: postgres:12-alpine
+    environment:
+      POSTGRES_USER: ${PGUSER}
+      POSTGRES_PASSWORD: ${PGPASSWORD}
+    ports:
+      - "5432:5432"
