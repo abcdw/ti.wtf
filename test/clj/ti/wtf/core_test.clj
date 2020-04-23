@@ -35,10 +35,10 @@
       (is (= 200 status))
       (is (re-find #"(?s)</body>" body)))))
 
-(deftest shorthand-redirect
-  (let [shorthand      "baa"
+(deftest alias-redirect
+  (let [alias          "baa"
         query          {:request-method :get
-                        :uri            (str "/" shorthand)}
+                        :uri            (str "/" alias)}
         {:keys [status headers]
          :as   result} (sut/app query)]
     (is (= 308 status))
@@ -49,7 +49,7 @@
         url ""
         result (sut/generate-link db url)]))
 
-(deftest id->shorthand
-  (is (= "a" (sut/id->shorthand 0)))
-  (is (= "9" (sut/id->shorthand 61)))
-  (is (= "ba" (sut/id->shorthand 62))))
+(deftest id->alias
+  (is (= "a" (sut/id->alias 0)))
+  (is (= "9" (sut/id->alias 61)))
+  (is (= "ba" (sut/id->alias 62))))

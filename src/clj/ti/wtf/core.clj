@@ -53,12 +53,15 @@ AND schemaname != 'information_schema';"])
    ["CREATE SEQUENCE alias_seq START WITH (62*62*62+1)"
     "CREATE TABLE alias (
 id BIGINT PRIMARY KEY DEFAULT nextval('alias_seq'),
-alias VARCHAR(10),
+alias TEXT,
 original_url TEXT)
 "]
    )
   )
 
+(defn generate-link [db url]
+  {:alias/shorten-url  "shorten here"
+   :alias/original-url "here"})
 
 (def sample-url "https://example.org/some/very/long/url")
 
@@ -73,7 +76,7 @@ code {
 }
 ")
 
-(defn id->shorthand [id]
+(defn id->alias [id]
   (loop [res  ""
          rest id]
     (if (= rest 0)
@@ -119,7 +122,7 @@ code {
    {:style
     {:margin "1rem"}}
    [:style styles]
-   [:pre    "# This is wtf.\n\nDon't know what the f*ck is this?\nThis is url shortener of course.\n\n\n\n"]
+   [:pre    "# ti.wtf\n\nThis is url shortener of course.\n\n\n\n"]
 
    [:pre "## Using via form\n\nJust paste you url below and get a shorter one or at least better one."]
     (form-comp)
@@ -170,13 +173,22 @@ Create a short url with curl:
      :headers {"content-type" "text/html"}
      :body    (rum/render-html (root-comp))}))
 
-(defn generate-link [db url]
-  {:ti.wtf/shorten-url  "shorten here"
-   :ti.wtf/original-url "here"})
 
-(defn handle-shorthand-get [request]
-  {:headers {"location" "https://example.org/test/url"}
-   :status  308})
+
+(defn alternative-alias-get [request]
+  (let [alias     (get-in request [:path-params :alias])
+        alias-int (Integer. alias)]
+    (if (< (mod alias-int 20) 19)
+      {:headers {"location" (str "/" (inc alias-int))}
+       :status  307}
+      {:headers {"content-type" "text/html"}
+       :body (format "<meta http-equiv=\"Refresh\" content=\"0; url=%s\" />"
+                     (inc alias-int))})))
+
+(defn handle-alias-get [request]
+  #p request
+  {:headers {"location" "/%20test/t"}
+   :status  307})
 
 (def router
   (ring/router
@@ -185,9 +197,9 @@ Create a short url with curl:
       {:handler handle-root-get}
       :post
       {:handler handle-root-post}}]
-    ["/:shorthand"
+    ["/:alias"
      {:get
-      {:handler handle-shorthand-get}}]]
+      {:handler handle-alias-get}}]]
    ))
 
 (def app
