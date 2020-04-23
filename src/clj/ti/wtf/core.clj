@@ -2,7 +2,9 @@
   (:require [aero.core :as aero]
             [clojure.java.io :as io]
             [clojure.string :as string]
+            [honeysql.core :as sql]
             [next.jdbc :as jdbc]
+            [next.jdbc.result-set :as result-set]
             [reitit.ring :as ring]
             [ring.adapter.jetty :as jetty]
             [ring.middleware.multipart-params :as ring-mp-params]
@@ -43,25 +45,74 @@ AND schemaname != 'information_schema';"])
   (let [ds (jdbc/get-datasource (dissoc (:db config) :dbname))]
     (jdbc/execute! ds ["CREATE DATABASE ti"])))
 
-(defn db-exec! [query]
-
-  )
+(def first-id (* 62 62 62))
 
 (defn migrate []
-  (jdbc/execute!
-   ds
-   ["CREATE SEQUENCE alias_seq START WITH (62*62*62+1)"
-    "CREATE TABLE alias (
+  (run!
+   (fn [stmt] (jdbc/execute!
+                ds [stmt]))
+    [(str "CREATE SEQUENCE alias_seq START WITH " first-id ";")
+     "CREATE TABLE alias (
 id BIGINT PRIMARY KEY DEFAULT nextval('alias_seq'),
 alias TEXT,
-original_url TEXT)
-"]
-   )
-  )
+original_url TEXT);
+"
+     "CREATE INDEX idx_alias ON alias(alias);"]))
 
-(defn generate-link [db url]
-  {:alias/shorten-url  "shorten here"
-   :alias/original-url "here"})
+(defn unmigrate []
+  (run!
+   (fn [stmt] (jdbc/execute!
+                ds [stmt]))
+   ["DROP INDEX idx_alias;"
+    "DROP TABLE alias;"
+    "DROP SEQUENCE alias_seq;"]))
+
+(comment
+  (unmigrate)
+  (migrate)
+
+  (create-alias! "test.com")
+
+  (db-exec! {:select :* :from :alias-seq})
+  (db-exec! {:select :* :from :alias})
+
+  (db-exec! {:insert-into :alias
+             :columns     [:original-url]
+             :values      [["http://example.com"]]}))
+
+(defn as-kebab-maps [rs opts]
+  (let [kebab #(string/replace % #"_" "-")]
+    (result-set/as-modified-maps rs (assoc opts :qualifier-fn kebab :label-fn kebab))))
+
+(defn db-exec! [query]
+  (jdbc/execute!
+   ds
+   (if (string? query)
+     [query]
+     (-> query
+         sql/build
+         sql/format))
+   {:return-keys true :builder-fn as-kebab-maps}))
+
+(defn generate-alias-field [{:alias/keys [id] :as alias}]
+  (assoc alias :alias/alias (id->alias id)))
+
+(defn create-alias-placeholder! [url]
+  (first
+   (db-exec! {:insert-into :alias
+              :columns     [:original-url]
+              :values      [[url]]})))
+
+(defn update-alias! [alias]
+  (db-exec! {:update :alias
+             :set    alias
+             :where  [:= :id (:alias/id alias)]}))
+
+(defn create-alias! [url]
+  (->
+   (create-alias-placeholder! url)
+   generate-alias-field
+   update-alias!))
 
 (def sample-url "https://example.org/some/very/long/url")
 

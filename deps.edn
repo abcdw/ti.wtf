@@ -5,7 +5,8 @@
          rum                       {:mvn/version "0.11.4"}
          seancorfield/next.jdbc    {:mvn/version "1.0.424"}
          org.postgresql/postgresql {:mvn/version "42.2.12"}
-         aero {:mvn/version "1.1.6"}}
+         aero {:mvn/version "1.1.6"}
+         honeysql {:mvn/version "0.9.10"}}
 
  :aliases
  {:nrepl
