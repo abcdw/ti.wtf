@@ -19,11 +19,6 @@
 
 (def config (get-config))
 
-(def ds (jdbc/get-datasource (:db config)))
-
-;; (jdbc/execute! ds ["SHOW TABLES"])
-;; (jdbc/execute! ds [""])
-
 (def a-z-range (range 97 (+ 97 26)))
 (def A-Z-range (range 65 (+ 65 26)))
 
@@ -32,6 +27,38 @@
    (map char a-z-range)
    (map char A-Z-range)
    (map str (range 0 10))))
+
+(def ds (jdbc/get-datasource (:db config)))
+
+;; (jdbc/execute! ds ["CREATE DATABASE ti"])
+(jdbc/execute! ds ["SELECT
+	*
+FROM
+	pg_catalog.pg_tables
+WHERE
+	schemaname != 'pg_catalog'
+AND schemaname != 'information_schema';"])
+
+(defn init-db []
+  (let [ds (jdbc/get-datasource (dissoc (:db config) :dbname))]
+    (jdbc/execute! ds ["CREATE DATABASE ti"])))
+
+(defn db-exec! [query]
+
+  )
+
+(defn migrate []
+  (jdbc/execute!
+   ds
+   ["CREATE SEQUENCE alias_seq START WITH (62*62*62+1)"
+    "CREATE TABLE alias (
+id BIGINT PRIMARY KEY DEFAULT nextval('alias_seq'),
+alias VARCHAR(10),
+original_url TEXT)
+"]
+   )
+  )
+
 
 (def sample-url "https://example.org/some/very/long/url")
 
