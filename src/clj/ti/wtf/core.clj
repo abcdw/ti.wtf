@@ -30,6 +30,21 @@
    (map char A-Z-range)
    (map str (range 0 10))))
 
+(defn id->alias [id]
+  (loop [res  ""
+         rest id]
+    (if (= rest 0)
+      (if (string/blank? res)
+        (str (first base62-digits))
+        res)
+      (recur
+       (str (->> base62-digits
+                 count
+                 (mod rest)
+                 (nth base62-digits))
+            res)
+       (quot rest (count base62-digits))))))
+
 (def ds (jdbc/get-datasource (:db config)))
 
 ;; (jdbc/execute! ds ["CREATE DATABASE ti"])
@@ -57,13 +72,15 @@ id BIGINT PRIMARY KEY DEFAULT nextval('alias_seq'),
 alias TEXT,
 original_url TEXT);
 "
-     "CREATE INDEX idx_alias ON alias(alias);"]))
+     "CREATE INDEX idx_alias ON alias(alias);"
+     "CREATE INDEX idx_original_url ON alias(original_url);"]))
 
 (defn unmigrate! []
   (run!
    (fn [stmt] (jdbc/execute!
                 ds [stmt]))
    ["DROP INDEX idx_alias;"
+    "DROP INDEX idx_original_url;"
     "DROP TABLE alias;"
     "DROP SEQUENCE alias_seq;"]))
 
@@ -72,13 +89,15 @@ original_url TEXT);
   (migrate!)
 
   (create-alias! "test.com")
+  (get-alias-by-alias-field "baaa")
 
   (db-exec! {:select :* :from :alias-seq})
   (db-exec! {:select :* :from :alias})
 
   (db-exec! {:insert-into :alias
              :columns     [:original-url]
-             :values      [["http://example.com"]]}))
+             :values      [["http://example.com"]]})
+  )
 
 (defn as-kebab-maps [rs opts]
   (let [kebab #(string/replace % #"_" "-")]
@@ -104,15 +123,30 @@ original_url TEXT);
               :values      [[url]]})))
 
 (defn update-alias! [alias]
-  (db-exec! {:update :alias
-             :set    alias
-             :where  [:= :id (:alias/id alias)]}))
+  (first
+   (db-exec! {:update :alias
+              :set    alias
+              :where  [:= :id (:alias/id alias)]})))
 
 (defn create-alias! [url]
   (->
    (create-alias-placeholder! url)
    generate-alias-field
    update-alias!))
+
+(defn get-alias-by-alias-field [alias]
+  (-> {:select :*
+       :from   :alias
+       :where  [:= :alias alias]}
+      db-exec!
+      first))
+
+(defn get-alias-by-original-url [url]
+  (-> {:select :*
+       :from   :alias
+       :where  [:= :original-url url]}
+      db-exec!
+      first))
 
 (def sample-url "https://example.org/some/very/long/url")
 
@@ -127,20 +161,7 @@ code {
 }
 ")
 
-(defn id->alias [id]
-  (loop [res  ""
-         rest id]
-    (if (= rest 0)
-      (if (string/blank? res)
-        (str (first base62-digits))
-        res)
-      (recur
-       (str (->> base62-digits
-                 count
-                 (mod rest)
-                 (nth base62-digits))
-            res)
-       (quot rest (count base62-digits))))))
+
 
 (rum/defc form-comp []
   [:div
@@ -148,7 +169,7 @@ code {
      {:target "shorten-url"
       :style  {:margin "0"}}
      [:input {:type        "text"
-              :name        "s"
+              :name        "u"
               :placeholder sample-url
               :autofocus   true
               :size        70
@@ -185,7 +206,8 @@ Create a short url with curl:
 "
     [:code
      (format
-      "curl -X POST --data '%s' ti.wtf"
+      "curl '%s?u=%s'"
+      (:domain config)
       sample-url)]
      "\n\n\n"
     ]
@@ -197,17 +219,27 @@ Create a short url with curl:
          :target "_blank"} "abcdw/ti.wtf"]]
    ])
 
+(defn uri->url [uri]
+  (if (re-find #"^http.*" uri)
+    uri
+    (str (:default-protocol config) "://" uri)))
+
 (rum/defc short-url-comp [url]
   [:body
    {:style
     {:margin 0}}
-   [:a {:href url
+   [:a {:href   (uri->url url)
         :target "_blank"
-        :style {:margin "0" :color "inherit" :font-family "monospace"}}
+        :style  {:margin "0" :color "inherit" :font-family "monospace"}}
      url]])
 
-(defn get-shorten-url [params]
-  (let [short-url (str (:base-url config) "/test")]
+(defn get-shorten-url! [params]
+  (let [url   (get params "u")
+        alias (:alias/alias
+               (or (get-alias-by-original-url url)
+                   (create-alias! url)))
+
+        short-url (str (:domain config) "/" alias)]
     {:status 200
      :body
      (if (contains? params "html")
@@ -215,16 +247,14 @@ Create a short url with curl:
        short-url)}))
 
 (defn handle-root-post [{:keys [form-params] :as request}]
-  (get-shorten-url form-params))
+  (get-shorten-url! form-params))
 
 (defn handle-root-get [{:keys [form-params query-params] :as request}]
-  (if (contains? query-params "s")
-    (get-shorten-url query-params)
+  (if (contains? query-params "u")
+    (get-shorten-url! query-params)
     {:status  200
      :headers {"content-type" "text/html"}
      :body    (rum/render-html (root-comp))}))
-
-
 
 (defn alternative-alias-get [request]
   (let [alias     (get-in request [:path-params :alias])
@@ -236,10 +266,12 @@ Create a short url with curl:
        :body (format "<meta http-equiv=\"Refresh\" content=\"0; url=%s\" />"
                      (inc alias-int))})))
 
+
 (defn handle-alias-get [request]
-  #p request
-  {:headers {"location" "/%20test/t"}
-   :status  308})
+  (let [alias (-> (get-in request [:path-params :alias])
+                  get-alias-by-alias-field)]
+    {:headers {"location" (:alias/original-url alias)}
+     :status  308}))
 
 (def router
   (ring/router

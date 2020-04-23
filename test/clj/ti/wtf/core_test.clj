@@ -12,6 +12,8 @@
 
 (use-fixtures :once reset-db)
 
+(def sample-url "https://example.org/very/long/url")
+
 (deftest root-html
   (let [query          {:request-method :get
                         :uri            "/"}
@@ -22,22 +24,43 @@
     ;; (?s) for multiline matching
     (is (re-find #"(?s)</form>" body))))
 
-(deftest get-shorten-url
-  (testing "get shorten url for provided url"
-    (let [query           {:request-method :get
-                           :uri            "/"
-                           :query-params   {"s" "https://example.org/very/long/url"}}
-          new-url-pattern (re-pattern (str (:base-url sut/config) "/.*"))
-          {:keys [status body]
-           :as   result}  (sut/app query)]
-             (is (= 200 status))
-             (is (re-matches new-url-pattern body))))
+(deftest shorten-url
+  (let [query           {:request-method :get
+                         :uri            "/"
+                         :query-params   {"u" sample-url}}
+        new-url-pattern (re-pattern (str ".*" (:domain sut/config) "/.*"))
+        {:keys [status body]
+         :as   result}  (sut/app query)
+        redirect-url    body]
 
+    (testing "get shorten url for provided url"
+      #p result
+      (is (= 200 status))
+      (is (re-matches new-url-pattern redirect-url)))
+
+    (testing "same url generates same alias"
+      (let [query {:request-method :get
+                            :uri            "/"
+                            :query-params   {"u" sample-url}}
+
+            {:keys [status body]} (sut/app query)]
+        (is (= 200 status))
+        (is (= redirect-url body))))
+
+    (testing "url redirect is correct"
+      (let [redirect-query           {:request-method :get
+                                      :uri            (string/replace redirect-url #".*/" "/")}
+            {:keys [status headers]} (sut/app redirect-query)
+            {:strs [location]}       headers]
+        (is (= 308 status))
+        (is (= sample-url location))))))
+
+(deftest html-response-check
   (testing "get html instead just url"
-    (let [query {:request-method :get
-                 :uri            "/"
-                 :query-params   {"s" "https://example.org/very/long/url"
-                                  "html"    "true"}}
+    (let [query          {:request-method :get
+                          :uri            "/"
+                          :query-params   {"u"    sample-url
+                                           "html" "true"}}
           {:keys [status body]
            :as   result} (sut/app query)]
       (is (= 200 status))
@@ -52,10 +75,6 @@
     (is (= 308 status))
     (is (contains? headers "location"))))
 
-(deftest generate-link
-  (let [db     {:urls [{}]}
-        url ""
-        result (sut/generate-link db url)]))
 
 (deftest id->alias
   (is (= "a" (sut/id->alias 0)))
