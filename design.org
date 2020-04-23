@@ -1,0 +1,12 @@
+* Design decisions
+** get with query params instead of post
+- it's easier to consturct a get query from any environment (browser, curl, http library)
+- it's easier to cache the response of GET request (browser, load balancer, etc)
+** sql database
+- perfomance can be better for sql rather then crux
+- easier to deploy on hosting provider like heroku or any other,
+  because they have postgres deployment options
+- more experience with sql
+** TEXT vs VARCHAR
+- According to [[https://www.depesz.com/2010/03/02/charx-vs-varcharx-vs-varchar-vs-text/][benchmark]] text with index works better than varchar in
+  most cases
