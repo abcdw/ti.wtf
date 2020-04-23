@@ -3,6 +3,14 @@
             [clojure.test :refer :all]
             [clojure.string :as string]))
 
+(defn reset-db [f]
+  (sut/unmigrate!)
+  (sut/migrate!)
+  (f)
+  (sut/unmigrate!)
+  (sut/migrate!))
+
+(use-fixtures :once reset-db)
 
 (deftest root-html
   (let [query          {:request-method :get
@@ -18,7 +26,7 @@
   (testing "get shorten url for provided url"
     (let [query           {:request-method :get
                            :uri            "/"
-                           :query-params   {"shorten" "https://example.org/very/long/url"}}
+                           :query-params   {"s" "https://example.org/very/long/url"}}
           new-url-pattern (re-pattern (str (:base-url sut/config) "/.*"))
           {:keys [status body]
            :as   result}  (sut/app query)]
@@ -28,7 +36,7 @@
   (testing "get html instead just url"
     (let [query {:request-method :get
                  :uri            "/"
-                 :query-params   {"shorten" "https://example.org/very/long/url"
+                 :query-params   {"s" "https://example.org/very/long/url"
                                   "html"    "true"}}
           {:keys [status body]
            :as   result} (sut/app query)]

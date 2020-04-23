@@ -41,13 +41,13 @@ WHERE
 	schemaname != 'pg_catalog'
 AND schemaname != 'information_schema';"])
 
-(defn init-db []
+(defn init-db! []
   (let [ds (jdbc/get-datasource (dissoc (:db config) :dbname))]
     (jdbc/execute! ds ["CREATE DATABASE ti"])))
 
 (def first-id (* 62 62 62))
 
-(defn migrate []
+(defn migrate! []
   (run!
    (fn [stmt] (jdbc/execute!
                 ds [stmt]))
@@ -59,7 +59,7 @@ original_url TEXT);
 "
      "CREATE INDEX idx_alias ON alias(alias);"]))
 
-(defn unmigrate []
+(defn unmigrate! []
   (run!
    (fn [stmt] (jdbc/execute!
                 ds [stmt]))
@@ -68,8 +68,8 @@ original_url TEXT);
     "DROP SEQUENCE alias_seq;"]))
 
 (comment
-  (unmigrate)
-  (migrate)
+  (unmigrate!)
+  (migrate!)
 
   (create-alias! "test.com")
 
@@ -148,7 +148,7 @@ code {
      {:target "shorten-url"
       :style  {:margin "0"}}
      [:input {:type        "text"
-              :name        "shorten"
+              :name        "s"
               :placeholder sample-url
               :autofocus   true
               :size        70
@@ -218,7 +218,7 @@ Create a short url with curl:
   (get-shorten-url form-params))
 
 (defn handle-root-get [{:keys [form-params query-params] :as request}]
-  (if (contains? query-params "shorten")
+  (if (contains? query-params "s")
     (get-shorten-url query-params)
     {:status  200
      :headers {"content-type" "text/html"}
@@ -239,7 +239,7 @@ Create a short url with curl:
 (defn handle-alias-get [request]
   #p request
   {:headers {"location" "/%20test/t"}
-   :status  307})
+   :status  308})
 
 (def router
   (ring/router
