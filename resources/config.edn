@@ -1,4 +1,10 @@
-{:base-url "http://localhost:3000"
+{:base-url #or [#env BASE_URL "http://localhost:3000"]
  :protocol "http"
  :domain   "localhost:3000"
- :db       {:dbtype "postgresql" :dbname "ti" :port 5432}}
+ :port     #long #or [#env PORT 3000]
+ :db       {:dbtype   "postgresql"
+            ; :dbname "ti"
+            :port     #long #or [#env PGPORT 5432]
+            :host     #env PGHOST
+            :user     #env PGUSER
+            :password #env PGPASSWORD}}
