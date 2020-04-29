@@ -297,10 +297,10 @@ Create a short url with curl:
                  ring-mp-params/wrap-multipart-params]}))
 
 (defn -main []
-  (jetty/run-jetty #'app {:port 3000 :join? false}))
+  (jetty/run-jetty #'app {:port (:port config)}))
 
 (comment
-  (def server (-main))
+  (def server (jetty/run-jetty #'app {:port (:port config) :join? false}))
   (.stop server)
   (app {:request-method :get :uri "/api"})
   )

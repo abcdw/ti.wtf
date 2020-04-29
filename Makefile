@@ -12,6 +12,9 @@ server/nrepl:
 server/test:
 	clojure -A:server:test:test-runner
 
+server/run:
+	clojure -A:server -m ti.wtf.core
+
 db/start:
 	docker-compose up -d
 
