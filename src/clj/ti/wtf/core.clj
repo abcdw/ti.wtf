@@ -47,20 +47,11 @@
 
 (def ds (jdbc/get-datasource (:db config)))
 
-;; (jdbc/execute! ds ["CREATE DATABASE ti"])
-(jdbc/execute! ds ["SELECT
-	*
-FROM
-	pg_catalog.pg_tables
-WHERE
-	schemaname != 'pg_catalog'
-AND schemaname != 'information_schema';"])
-
 (defn init-db! []
   (let [ds (jdbc/get-datasource (dissoc (:db config) :dbname))]
     (jdbc/execute! ds ["CREATE DATABASE ti"])))
 
-(def first-id (* 62 62 62))
+(def first-id (* 62 62))
 
 (defn migrate! []
   (run!
