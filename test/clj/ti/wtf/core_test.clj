@@ -34,7 +34,6 @@
         redirect-url    body]
 
     (testing "get shorten url for provided url"
-      #p result
       (is (= 200 status))
       (is (re-matches new-url-pattern redirect-url)))
 
