@@ -77,3 +77,33 @@
   (is (= "a" (sut/id->alias 0)))
   (is (= "9" (sut/id->alias 61)))
   (is (= "ba" (sut/id->alias 62))))
+
+(deftest shorten-empty-url
+  (let [query           {:request-method :get
+                         :uri            "/"
+                         :query-params   {"u" ""}}
+        new-url-pattern (re-pattern (str ".*" (:base-uri sut/config) "/.*"))
+        {:keys [status body]
+         :as   result}  (sut/app query)
+        redirect-url    body]
+
+    (testing "get shorten url for provided url"
+      (is (= 200 status))
+      (is (re-matches new-url-pattern redirect-url)))
+
+    (testing "same url generates same alias"
+      (let [query {:request-method :get
+                   :uri            "/"
+                   :query-params   {"u" ""}}
+
+            {:keys [status body]} (sut/app query)]
+        (is (= 200 status))
+        (is (= redirect-url body))))
+
+    (testing "empty url redirects to ti.wtf"
+      (let [redirect-query           {:request-method :get
+                                      :uri            (string/replace redirect-url #".*/" "/")}
+            {:keys [status headers]} (sut/app redirect-query)
+            {:strs [location]}       headers]
+        (is (= 308 status))
+        (is (= (:base-url sut/config) location))))))

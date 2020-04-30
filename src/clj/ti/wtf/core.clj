@@ -266,10 +266,14 @@ Create a short url with curl:
 
 
 (defn handle-alias-get [request]
-  (let [alias (-> (get-in request [:path-params :alias])
-                  get-alias-by-alias-field)]
+  (let [alias        (-> (get-in request [:path-params :alias])
+                         get-alias-by-alias-field)
+        original-url (:alias/original-url alias)]
     (if alias
-      {:headers {"location" (uri->url (:alias/original-url alias))}
+      {:headers {"location"
+                 (if (string/blank? original-url)
+                   (:base-url config)
+                   (uri->url original-url))}
        :status  308}
       {:status 404})))
 
