@@ -65,15 +65,13 @@
       (is (= 200 status))
       (is (re-find #"(?s)</body>" body)))))
 
-(deftest alias-redirect
-  (let [alias          "baa"
+(deftest alias-not-found
+  (let [alias          "baacaac"
         query          {:request-method :get
                         :uri            (str "/" alias)}
         {:keys [status headers]
          :as   result} (sut/app query)]
-    (is (= 308 status))
-    (is (contains? headers "location"))))
-
+    (is (= 404 status))))
 
 (deftest id->alias
   (is (= "a" (sut/id->alias 0)))
