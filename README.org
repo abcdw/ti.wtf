@@ -1,15 +1,19 @@
-* ti.wtf
+* [[https://ti.wtf][ti.wtf]]
 
 Simple url shortener
 
-https://example.org/some/very/long/url -> ti.wtf/B0
+Long links become shorter:
+
+https://example.org/some/very/long/url -> ti.wtf/baa
 
 
 ** Usage
 
-#+BEGIN_SRC sh
-curl 'ti.wtf?u=https://example.org/some/very/long/url'
+#+BEGIN_SRC sh :export both
+curl "ti.wtf?u=https://example.org/some/very/long/url"
 #+END_SRC
 
 #+RESULTS:
-: ti.wtf/baaa
+: ti.wtf/baa
+
+For additional info visit [[https://ti.wtf][ti.wtf]].
