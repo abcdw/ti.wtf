@@ -181,34 +181,39 @@ code {
                          :height "1.1rem"}}]])
 
 (rum/defc root-comp []
-  [:div
-   {:style
-    {:margin "1rem"}}
-   [:style styles]
-   [:pre    "# ti.wtf\n\nThis is url shortener of course.\n\n\n\n"]
+  [:html
+   [:head
+    [:link {:rel  "icon"
+            :href "data:,"}]]
+   [:body
+    [:div
+     {:style
+      {:margin "1rem"}}
+     [:style styles]
+     [:pre    "# ti.wtf\n\nThis is url shortener of course.\n\n\n\n"]
 
-   [:pre "## Using via form\n\nJust paste you url below and get a shorter one or at least better one."]
-    (form-comp)
+     [:pre "## Using via form\n\nJust paste you url below and get a shorter one or at least better one."]
+     (form-comp)
 
-   [:pre "\n\n\n"]
-   [:pre
-    "## Using via cli\n
+     [:pre "\n\n\n"]
+     [:pre
+      "## Using via cli\n
 Create a short url with curl:
 "
-    [:code
-     (format
-      "curl '%s?u=%s'"
-      (:domain config)
-      sample-url)]
-     "\n\n\n"
-    ]
+      [:code
+       (format
+        "curl '%s?u=%s'"
+        (:domain config)
+        sample-url)]
+      "\n\n\n"
+      ]
 
 
 
-   [:pre "## Source code\n\nThe source code available at "
-    [:a {:href   "https://github.com/abcdw/ti.wtf"
-         :target "_blank"} "abcdw/ti.wtf"]]
-   ])
+     [:pre "## Source code\n\nThe source code available at "
+      [:a {:href   "https://github.com/abcdw/ti.wtf"
+           :target "_blank"} "abcdw/ti.wtf"]]
+     ]]])
 
 (defn uri->url [uri]
   (if (re-find #"^http.*" uri)
