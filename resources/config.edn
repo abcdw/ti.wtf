@@ -1,10 +1,9 @@
-{:base-url         #or [#env BASE_URL "http://localhost:3000"]
- :protocol         "http"
- :default-protocol "http"
+{:base-url         #join [#ref [:protocol] #ref [:domain]]
+ :protocol         "https"
+ :default-protocol "https"
  :domain           #or [#env DOMAIN "localhost:3000"]
  :port             #long #or [#env PORT 3000]
  :db               {:dbtype   "postgresql"
-                                        ; :dbname "ti"
                     :port     #long #or [#env PGPORT 5432]
                     :host     #env PGHOST
                     :user     #env PGUSER
