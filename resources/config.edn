@@ -1,5 +1,5 @@
-{:base-url         #join [#ref [:protocol] #ref [:base-uri]]
- :base-uri         #join [#ref [:domain] #ref [:port]]
+{:base-url         #join [#ref [:protocol] "://" #ref [:base-uri]]
+ :base-uri         #base-uri [#ref [:domain] #ref [:port]]
  :protocol         "https"
  :default-protocol "https"
  :domain           #or [#env DOMAIN "localhost"]

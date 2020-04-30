@@ -19,6 +19,12 @@
   (-> (io/resource "config.edn")
       (aero/read-config)))
 
+(defmethod aero/reader 'base-uri
+  [{:keys [profile] :as opts} tag [domain port]]
+  (if (= 80 port)
+    domain
+    (str domain ":" port)))
+
 (def config (get-config))
 
 (def a-z-range (range 97 (+ 97 26)))
