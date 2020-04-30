@@ -1,0 +1,2 @@
+#!/usr/bin/env sh
+curl "ti.wtf?u=$1"

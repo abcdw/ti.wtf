@@ -1,2 +1,0 @@
-#!/usr/bin/env sh
-curl -F'shorten=http://test.sh' http://localhost:3000 -v

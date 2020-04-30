@@ -202,13 +202,15 @@ Create a short url with curl:
 "
       [:code
        (format
-        "curl '%s?u=%s'"
+        "curl \"%s?u=%s\""
         (:domain config)
         sample-url)]
+      "\n\n"
+      "or using " [:a {:href "https://github.com/abcdw/ti.wtf/blob/master/ti"} "ti"] " script:"
+      [:code
+       "./ti " sample-url]
       "\n\n\n"
       ]
-
-
 
      [:pre "## Source code\n\nThe source code available at "
       [:a {:href   "https://github.com/abcdw/ti.wtf"
