@@ -28,7 +28,7 @@
   (let [query           {:request-method :get
                          :uri            "/"
                          :query-params   {"u" sample-url}}
-        new-url-pattern (re-pattern (str ".*" (:domain sut/config) "/.*"))
+        new-url-pattern (re-pattern (str ".*" (:base-uri sut/config) "/.*"))
         {:keys [status body]
          :as   result}  (sut/app query)
         redirect-url    body]

@@ -203,7 +203,7 @@ Create a short url with curl:
       [:code
        (format
         "curl \"%s?u=%s\""
-        (:domain config)
+        (:base-uri config)
         sample-url)]
       "\n\n"
       "or using " [:a {:href "https://github.com/abcdw/ti.wtf/blob/master/ti"} "ti"] " script:\n"
@@ -237,7 +237,7 @@ Create a short url with curl:
                (or (get-alias-by-original-url url)
                    (create-alias! url)))
 
-        short-url (str (:domain config) "/" alias)]
+        short-url (str (:base-uri config) "/" alias)]
     {:status 200
      :body
      (if (contains? params "html")

@@ -1,7 +1,8 @@
-{:base-url         #join [#ref [:protocol] #ref [:domain]]
+{:base-url         #join [#ref [:protocol] #ref [:base-uri]]
+ :base-uri         #join [#ref [:domain] #ref [:port]]
  :protocol         "https"
  :default-protocol "https"
- :domain           #or [#env DOMAIN "localhost:3000"]
+ :domain           #or [#env DOMAIN "localhost"]
  :port             #long #or [#env PORT 3000]
  :db               {:dbtype   "postgresql"
                     :port     #long #or [#env PGPORT 5432]
