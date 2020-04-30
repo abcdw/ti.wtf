@@ -34,7 +34,9 @@
   :uberjar
   {:extra-deps {pack/pack.alpha {:git/url "https://github.com/juxt/pack.alpha.git"
                                  :sha     "595388c5b909759445a92a19192df50e427aa9a5"}}
-   :main-opts  ["-m" "mach.pack.alpha.capsule" "target/uberjar.jar" "-m" "ti.wtf.core"]}
+   :main-opts  ["-m" "mach.pack.alpha.capsule" "target/uberjar.jar"
+                "-e" "src/clj" "-e" "resources"
+                "-m" "ti.wtf.core"]}
 
   :run {:main-opts ["-m" "app.server.core"]}
 
