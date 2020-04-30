@@ -206,7 +206,7 @@ Create a short url with curl:
         (:domain config)
         sample-url)]
       "\n\n"
-      "or using " [:a {:href "https://github.com/abcdw/ti.wtf/blob/master/ti"} "ti"] " script:"
+      "or using " [:a {:href "https://github.com/abcdw/ti.wtf/blob/master/ti"} "ti"] " script:\n"
       [:code
        "./ti " sample-url]
       "\n\n\n"
