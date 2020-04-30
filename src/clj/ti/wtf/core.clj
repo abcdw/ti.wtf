@@ -142,13 +142,14 @@ original_url TEXT);
 (def sample-url "https://example.org/some/very/long/url")
 
 (def styles "
-* { font-family: monospace; }
+* { color: #3E3E3E;}
 :focus { outline: none; }
 iframe { overflow: hidden; }
 a { color: inherit; }
 
 code {
   margin-left: 2rem;
+  color: #161616;
 }
 ")
 
@@ -190,12 +191,12 @@ code {
      {:style
       {:margin "1rem"}}
      [:style styles]
-     [:pre    "# ti.wtf\n\nThis is url shortener of course.\n\n\n\n"]
+     [:pre    "# ti.wtf\n\nThis is url shortener of course.\n\n\n"]
 
      [:pre "## Using via form\n\nJust paste you url below and get a shorter one or at least better one."]
      (form-comp)
 
-     [:pre "\n\n\n"]
+     [:pre "\n\n"]
      [:pre
       "## Using via cli\n
 Create a short url with curl:
